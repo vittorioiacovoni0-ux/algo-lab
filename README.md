@@ -1,6 +1,6 @@
 # algo-lab
 
-Laboratorio personale di trading algoritmico: dalla ricerca al paper trading, fino alla microstruttura e all'HFT.
+Laboratorio personale di trading algoritmico intraday e giornaliero: dalla ricerca out-of-sample al paper trading.
 
 ## Fase 1 — Pairs trading intraday (Alpaca paper)
 
@@ -40,22 +40,17 @@ python research_pairs.py
 python live_pairs.py
 ```
 
-## Fase 2 — Microstruttura crypto (Coinbase)
-
-- `l2_recorder.py`: registra order book L2 e trade (websocket pubblico Coinbase) in Parquet, con timestamp dell'exchange e di ricezione, controllo dei numeri di sequenza e riconnessione con nuovo snapshot
-- `orderbook.py`: ricostruzione del book dagli eventi registrati (replay)
-
-Nota: nel canale `market_trades` il campo `side` è il lato del maker, non dell'aggressore (verificato contro il book ricostruito).
-
 ## Deploy su VM (Ubuntu)
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/vittorioiacovoni0-ux/algo-lab/main/deploy/setup.sh | bash
 ```
-Installa l'ambiente, esegue i test e avvia il recorder come servizio systemd. Il bot pairs (`algo-pairs`) si avvia a mano dopo aver creato `~/algo-lab/.env` con le chiavi paper. Log: `journalctl -u l2-recorder -f`.
+Installa l'ambiente, esegue i test e registra il bot come servizio systemd (`algo-pairs`), che si avvia a mano dopo aver creato `~/algo-lab/.env` con le chiavi paper. Log: `journalctl -u algo-pairs -f`.
 
 ## Roadmap
-- [ ] Fase 1 (in corso): pairs trading, ricerca out-of-sample + paper trading
-- [ ] Fase 2 (in corso): registrazione order book crypto (L2) e analisi di microstruttura
-- [ ] Fase 3: market making Avellaneda-Stoikov con `hftbacktest` (coda e latenza)
-- [ ] Fase 4: pipeline completa su `nautilus_trader` + testnet
+- [ ] Fase 1 (in chiusura): pairs trading intraday. Ricerca conclusa (nessun edge netto); resta il paper trading come test di esecuzione e misura dello slippage
+- [ ] Fase 2: strategie giornaliere su ETF multi-asset (trend following / time-series momentum, momentum cross-sectional, volatility targeting), walk-forward su ~10 anni
+- [ ] Fase 3: intraday con effetti documentati in letteratura (es. intraday momentum su SPY: la prima mezz'ora predice l'ultima), valutati con i costi misurati in Fase 1
+- [ ] Fase 4: portafoglio di strategie con risk management e deploy in paper su VM con monitoraggio
+
+Il codice di microstruttura/HFT sviluppato e poi accantonato è in `archive/hft/` (non in uso).

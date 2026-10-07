@@ -1,7 +1,7 @@
 # algo-lab — contesto per Claude Code
 
 ## Chi sono e obiettivo
-Sono Vittorio, studente del master in Financial Technology & Analytics a Stevens (NJ), con background in asset management e derivati. Questo repo è un laboratorio personale per imparare il trading algoritmico e l'HFT in modo rigoroso, dalla ricerca al paper trading. È anche un portfolio per candidature quant. Rispondimi in italiano; codice, nomi di variabili e commit in inglese o italiano va bene, ma coerenti con i file esistenti.
+Sono Vittorio, studente del master in Financial Technology & Analytics a Stevens (NJ), con background in asset management e derivati. Questo repo è un laboratorio personale per imparare il trading algoritmico intraday e giornaliero in modo rigoroso, dalla ricerca al paper trading. È anche un portfolio per candidature quant. Rispondimi in italiano; codice, nomi di variabili e commit in inglese o italiano va bene, ma coerenti con i file esistenti.
 
 ## Stato attuale — Fase 1: pairs trading intraday (Alpaca paper)
 - `strategy.py`: logica condivisa tra backtest e live (z-score dello spread su log-prezzi, macchina a stati 0/+1/-1 con z_in=2, z_out=0.5, z_stop=4, mai inversione diretta long→short). REGOLA: backtest e live devono usare lo stesso codice.
@@ -13,9 +13,9 @@ Sono Vittorio, studente del master in Financial Technology & Analytics a Stevens
 - Test pytest in `tests/` (strategia, ricerca, walk-forward su dati sintetici, live con client finto).
 - Risultato su dati reali (ott 2025 – ott 2026, vedi README): nessun edge netto. Lordo ≈ +2–3.5%, netto negativo, costo di pareggio 1.4–2.1 bps/lato contro half-spread medio 2.1 bps. Il filtro di cointegrazione non batte la nulla.
 
-## Fase 2 (avviata)
-- `l2_recorder.py` (Coinbase Advanced Trade WS pubblico, level2 + market_trades + heartbeats) -> `data/l2/{book,trades,events}/date=.../part-*.parquet`; `orderbook.py` con `replay`. In market_trades `side` = lato del MAKER. Spread BTC-USD tipicamente 1 tick ($0.01). Volume dati ~10 MB/ora per BTC+ETH in fase calma.
-- `deploy/`: systemd units e `setup.sh` per VM Ubuntu (utente ubuntu).
+## Archivio
+- `archive/hft/`: recorder L2 Coinbase + ricostruzione del book, accantonati (decisione 2026-10-07: il progetto resta su intraday e giornaliero, l'HFT eventualmente in progetti separati). Non usarlo né estenderlo salvo richiesta esplicita. Ha test e requirements propri, fuori dalla suite principale.
+- `deploy/`: systemd unit e `setup.sh` per far girare il bot paper su una VM Ubuntu (utente ubuntu).
 
 ## Vincoli non negoziabili
 - `TradingClient(..., paper=True)` sempre. Mai codice che punti a un conto live.
@@ -25,10 +25,10 @@ Sono Vittorio, studente del master in Financial Technology & Analytics a Stevens
 - Sono negli USA: binance.com e Bybit bloccano gli IP statunitensi. Per i dati crypto usare Coinbase o Kraken (websocket pubblici) oppure i campioni di Tardis.dev.
 
 ## Roadmap
-1. [in chiusura] Fase 1: ricerca su dati reali e walk-forward fatti (nessun edge con ordini a mercato). Resta: far girare il bot in paper alcuni giorni come test di esecuzione e misurare l'implementation shortfall reale (fill contro chiusura barra) per confrontarlo con l'half-spread quotato. Serve una macchina sempre accesa: il codespace si ferma per inattività.
-2. Fase 2: recorder di order book L2 + trade crypto (Coinbase/Kraken) in Parquet; analisi di microstruttura (spread, order book imbalance, impatto dei trade).
-3. Fase 3: market making Avellaneda-Stoikov / GLFT con `hftbacktest`, confrontando i risultati con e senza modello di coda e latenza.
-4. Fase 4: pipeline completa su `nautilus_trader` collegata a un testnet.
+1. [in chiusura] Fase 1: ricerca su dati reali e walk-forward fatti (nessun edge con ordini a mercato). Resta: far girare il bot in paper (PC o VM) alcune settimane come test di esecuzione e misurare l'implementation shortfall reale con `analyze_fills.py`, da confrontare con l'half-spread quotato (~2 bps).
+2. Fase 2: strategie giornaliere su ETF multi-asset: trend following / time-series momentum, momentum cross-sectional, volatility targeting. Walk-forward su ~10 anni, costi realistici, confronto con buy & hold.
+3. Fase 3: intraday con effetti documentati (es. intraday momentum su SPY, Gao-Han-Li-Zhou 2018), con i costi misurati in Fase 1.
+4. Fase 4: portafoglio di strategie, risk management (sizing, vol targeting, limiti), deploy paper su VM con monitoraggio.
 
 ## Come voglio lavorare
 - Prima di modifiche non banali spiegami il piano in breve, poi procedi.
