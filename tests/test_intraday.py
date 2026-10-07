@@ -95,10 +95,11 @@ def test_costs_round_trip():
 
 def test_high_vol_days_uses_only_past(closes):
     f = im.daily_features(closes)
-    day = f.index[400]
-    h1 = im.high_vol_days(f)
+    day = f.index[200]
+    h1 = im.high_vol_days(f, min_periods=100)
     g = f.copy()
     g.loc[g.index >= day, "r1"] *= 10                                  # da `day` in poi la volatilità esplode
-    h2 = im.high_vol_days(g)
+    h2 = im.high_vol_days(g, min_periods=100)
     pd.testing.assert_series_equal(h1.loc[:day], h2.loc[:day])
-    assert h1.iloc[:250].isna().all()
+    assert h1.iloc[:100].isna().all()
+    assert not h1.loc[day:].iloc[1:].equals(h2.loc[day:].iloc[1:])
