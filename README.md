@@ -40,6 +40,39 @@ python research_pairs.py
 python live_pairs.py
 ```
 
+## Infrastruttura comune
+
+- `data.py`: `get_bars` scarica storico SIP aggiustato per split e dividendi (total return) con cache Parquet
+- `backtest.py`: motore su pesi di portafoglio, con deriva dei pesi tra i ribilanciamenti, ritardo di esecuzione, costi sul turnover, prestito sugli short, rendimenti in eccesso sul cash (BIL), t-stat e costo di pareggio
+
+## Fase 2 — Strategie giornaliere su ETF (`daily/`)
+
+Parametri dalla letteratura fissati a priori; campione 2017–2026 quasi tutto successivo alla pubblicazione dei paper, quindi un test fuori campione delle anomalie. Esecuzione alla chiusura successiva alla decisione, 5 bps per unità di turnover.
+
+| 2017-02 – 2026-10 | CAGR | Sharpe netto | t-stat | Max DD | Corr. SPY |
+|---|---|---|---|---|---|
+| Trend following (TSMOM, 20 ETF multi-asset) | 3.6% | 0.17 | 0.52 | −23% | 0.08 |
+| Momentum settoriale top 3 | 14.8% | 0.71 | 2.20 | −30% | 0.89 |
+| Vol targeting su SPY | 14.6% | 0.76 | 2.35 | −26% | 0.91 |
+| SPY buy & hold | 15.1% | 0.74 | 2.30 | −34% | 1.00 |
+| 60/40 SPY/IEF | 9.5% | 0.68 | 2.12 | −21% | 0.97 |
+
+Conclusioni:
+1. Nessuna strategia batte SPY in Sharpe in modo distinguibile dal rumore. In un decennio dominato dal mercato azionario USA, il momentum settoriale è essenzialmente SPY con un altro nome (beta 0.92).
+2. Il trend following ha rendimento basso ma correlazione quasi nulla con SPY e paga quando serve (2022: +16.7% contro −18.2%): il suo valore è da diversificatore, da valutare nel portafoglio (Fase 4).
+3. Il vol targeting non aumenta lo Sharpe ma riduce il drawdown (−26% contro −34%); costo tipico: il rimbalzo a V perso nel 2020.
+4. Anche lo Sharpe di SPY ha t-stat ~2.3 su quasi 10 anni: con questa lunghezza di storia, differenze di Sharpe di 0.1–0.2 non sono misurabili.
+
+## Fase 3 — Intraday momentum (`intraday/`)
+
+Gao, Han, Li, Zhou (2018): il rendimento dalla chiusura di ieri alle 10:00 predice l'ultima mezz'ora. Barre a 5 minuti, SPY/QQQ/IWM/DIA, 2016–2026 (fuori dal campione del paper, 1993–2013).
+
+- Regressione predittiva su SPY: beta 0.016, t Newey-West 0.58, R² 0.15% (paper: R² ~1.6%). Su nessun ETF t > 1.5.
+- Nei giorni ad alta volatilità (soglia calcolata solo sul passato) il beta è positivo come nel paper, nei giorni calmi nullo o negativo, ma senza significatività.
+- La strategia (segno di r1, posizione 15:30–16:00) ha rendimento lordo intorno a zero e netto −5% l'anno: un round trip al giorno a 1 bp per lato costa ~5% annuo. Costo di pareggio < 0.5 bps.
+
+Conclusione: l'effetto non sopravvive fuori campione sugli ETF; se esiste, è troppo piccolo per pagare anche i costi minimi.
+
 ## Deploy su VM (Ubuntu)
 
 ```bash
@@ -49,8 +82,8 @@ Installa l'ambiente, esegue i test e registra il bot come servizio systemd (`alg
 
 ## Roadmap
 - [ ] Fase 1 (in chiusura): pairs trading intraday. Ricerca conclusa (nessun edge netto); resta il paper trading come test di esecuzione e misura dello slippage
-- [ ] Fase 2: strategie giornaliere su ETF multi-asset (trend following / time-series momentum, momentum cross-sectional, volatility targeting), walk-forward su ~10 anni
-- [ ] Fase 3: intraday con effetti documentati in letteratura (es. intraday momentum su SPY: la prima mezz'ora predice l'ultima), valutati con i costi misurati in Fase 1
+- [x] Fase 2: strategie giornaliere su ETF multi-asset (trend following, momentum settoriale, vol targeting) contro i benchmark
+- [x] Fase 3: intraday momentum su ETF azionari, regressioni predittive e strategie con costi
 - [ ] Fase 4: portafoglio di strategie con risk management e deploy in paper su VM con monitoraggio
 
 Il codice di microstruttura/HFT sviluppato e poi accantonato è in `archive/hft/` (non in uso).

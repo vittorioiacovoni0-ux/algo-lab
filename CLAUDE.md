@@ -13,6 +13,12 @@ Sono Vittorio, studente del master in Financial Technology & Analytics a Stevens
 - Test pytest in `tests/` (strategia, ricerca, walk-forward su dati sintetici, live con client finto).
 - Risultato su dati reali (ott 2025 – ott 2026, vedi README): nessun edge netto. Lordo ≈ +2–3.5%, netto negativo, costo di pareggio 1.4–2.1 bps/lato contro half-spread medio 2.1 bps. Il filtro di cointegrazione non batte la nulla.
 
+## Fasi 2 e 3 (ricerca fatta 2026-10-07, risultati nel README)
+- `data.get_bars`: SIP storico dal 2016, aggiustato (total return), cache in `data/cache/` per giorno di download, scaricato a blocchi simbolo x anno (in un'unica richiesta 10 anni di barre a 5 min saturano la memoria).
+- `backtest.py`: motore su pesi (deriva, lag, costi, borrow, excess su BIL, t-stat, costo di pareggio). Usato da `daily/` e, per le metriche, da `intraday/`.
+- `daily/` (`python -m daily.research`): TSMOM multi-asset, momentum settoriale, vol targeting su SPY vs SPY, 60/40, equipesati. Nessuna batte SPY in Sharpe; TSMOM è un diversificatore (corr 0.08, +16.7% nel 2022).
+- `intraday/` (`python -m intraday.research`): intraday momentum GHLZ 2018 su SPY/QQQ/IWM/DIA. Effetto non significativo fuori campione, netto negativo.
+
 ## Archivio
 - `archive/hft/`: recorder L2 Coinbase + ricostruzione del book, accantonati (decisione 2026-10-07: il progetto resta su intraday e giornaliero, l'HFT eventualmente in progetti separati). Non usarlo né estenderlo salvo richiesta esplicita. Ha test e requirements propri, fuori dalla suite principale.
 - `deploy/`: systemd unit e `setup.sh` per far girare il bot paper su una VM Ubuntu (utente ubuntu).
@@ -26,8 +32,8 @@ Sono Vittorio, studente del master in Financial Technology & Analytics a Stevens
 
 ## Roadmap
 1. [in chiusura] Fase 1: ricerca su dati reali e walk-forward fatti (nessun edge con ordini a mercato). Resta: far girare il bot in paper (PC o VM) alcune settimane come test di esecuzione e misurare l'implementation shortfall reale con `analyze_fills.py`, da confrontare con l'half-spread quotato (~2 bps).
-2. Fase 2: strategie giornaliere su ETF multi-asset: trend following / time-series momentum, momentum cross-sectional, volatility targeting. Walk-forward su ~10 anni, costi realistici, confronto con buy & hold.
-3. Fase 3: intraday con effetti documentati (es. intraday momentum su SPY, Gao-Han-Li-Zhou 2018), con i costi misurati in Fase 1.
+2. [fatta] Fase 2: strategie giornaliere su ETF (`daily/`).
+3. [fatta] Fase 3: intraday momentum (`intraday/`).
 4. Fase 4: portafoglio di strategie, risk management (sizing, vol targeting, limiti), deploy paper su VM con monitoraggio.
 
 ## Come voglio lavorare
