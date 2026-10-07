@@ -13,8 +13,9 @@ _client = StockHistoricalDataClient(API_KEY, API_SECRET)
 TZ = "America/New_York"
 
 
-def get_closes(symbols, minutes=15, days=120):
-    """Prezzi di chiusura (colonne = simboli), solo orario regolare, solo barre COMPLETE."""
+def get_closes(symbols, minutes=15, days=120, fill=True):
+    """Prezzi di chiusura (colonne = simboli), solo orario regolare, solo barre COMPLETE.
+    fill=False lascia NaN dove IEX non ha scambi in quella barra (prezzo che sarebbe stantio)."""
     end = datetime.now(timezone.utc)
     req = StockBarsRequest(
         symbol_or_symbols=symbols,
@@ -31,4 +32,4 @@ def get_closes(symbols, minutes=15, days=120):
     # scarta la barra in corso: usare una barra incompleta = lookahead nel live
     now = pd.Timestamp.now(tz=TZ)
     closes = closes[closes.index + pd.Timedelta(minutes=minutes) <= now]
-    return closes.ffill().dropna()
+    return closes.ffill().dropna() if fill else closes
