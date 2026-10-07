@@ -78,6 +78,8 @@ def summary(series, rows):
         "ret_%": 100 * net.sum(),
         "ret_lordo_%": 100 * gross.sum(),
         "max_dd_%": 100 * (equity - equity.cummax()).min(),
+        # net = gross - turnover * costo  =>  costo per lato che azzera il rendimento netto
+        "costo_pareggio_bps": rp.COST_BPS * gross.sum() / (gross.sum() - net.sum()) if gross.sum() > net.sum() else np.nan,
         "trade": int(rows.trade.sum()),
         "giorni_oos": len(daily),
     }
