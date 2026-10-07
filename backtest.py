@@ -63,6 +63,8 @@ def metrics(res, periods_per_year=252):
         "vol_%": 100 * res.net.std() * np.sqrt(periods_per_year),
         "sharpe_lordo": sharpe(res.gross),
         "sharpe_netto": sharpe(res.net),
+        # t-stat del rendimento medio in eccesso ~ Sharpe * sqrt(anni): sotto ~2 non si distingue da zero
+        "t_stat": sharpe(res.net) * np.sqrt(years),
         "max_dd_%": 100 * (total / total.cummax() - 1).min(),
         "turnover_annuo": res.turnover.sum() / years,
         "trade": int(res.trade.sum()),
