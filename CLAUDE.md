@@ -13,6 +13,10 @@ Sono Vittorio, studente del master in Financial Technology & Analytics a Stevens
 - Test pytest in `tests/` (strategia, ricerca, walk-forward su dati sintetici, live con client finto).
 - Risultato su dati reali (ott 2025 – ott 2026, vedi README): nessun edge netto. Lordo ≈ +2–3.5%, netto negativo, costo di pareggio 1.4–2.1 bps/lato contro half-spread medio 2.1 bps. Il filtro di cointegrazione non batte la nulla.
 
+## Fase 2 (avviata)
+- `l2_recorder.py` (Coinbase Advanced Trade WS pubblico, level2 + market_trades + heartbeats) -> `data/l2/{book,trades,events}/date=.../part-*.parquet`; `orderbook.py` con `replay`. In market_trades `side` = lato del MAKER. Spread BTC-USD tipicamente 1 tick ($0.01). Volume dati ~10 MB/ora per BTC+ETH in fase calma.
+- `deploy/`: systemd units e `setup.sh` per VM Ubuntu (utente ubuntu).
+
 ## Vincoli non negoziabili
 - `TradingClient(..., paper=True)` sempre. Mai codice che punti a un conto live.
 - Mai leggere, stampare o committare `.env` o chiavi API.

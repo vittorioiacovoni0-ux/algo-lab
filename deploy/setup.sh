@@ -1,0 +1,20 @@
+#!/usr/bin/env bash
+# Setup su una VM Ubuntu (utente ubuntu). Idempotente: si può rilanciare.
+set -euo pipefail
+sudo apt-get update -q && sudo apt-get install -y -q python3-venv git
+[ -d ~/algo-lab ] || git clone https://github.com/vittorioiacovoni0-ux/algo-lab.git ~/algo-lab
+cd ~/algo-lab && git pull -q
+python3 -m venv .venv
+.venv/bin/pip install -q -r requirements.txt
+.venv/bin/pytest -q
+sudo cp deploy/*.service /etc/systemd/system/
+sudo systemctl daemon-reload
+# il recorder usa solo dati pubblici: parte subito
+sudo systemctl enable --now l2-recorder
+if [ -f .env ]; then
+  chmod 600 .env
+  echo "Chiavi trovate. Avvia il bot pairs con: sudo systemctl enable --now algo-pairs"
+  echo "(prima fermalo sul PC: due istanze sullo stesso conto raddoppiano gli ordini)"
+else
+  echo "Manca ~/algo-lab/.env con ALPACA_API_KEY e ALPACA_API_SECRET (chiavi PAPER): crealo, poi rilancia."
+fi

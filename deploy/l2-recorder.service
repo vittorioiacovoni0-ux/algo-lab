@@ -1,0 +1,16 @@
+[Unit]
+Description=algo-lab Coinbase L2 + trades recorder
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+User=ubuntu
+WorkingDirectory=/home/ubuntu/algo-lab
+ExecStart=/home/ubuntu/algo-lab/.venv/bin/python l2_recorder.py BTC-USD ETH-USD
+Restart=always
+RestartSec=5
+# SIGTERM -> il recorder scrive il buffer prima di uscire
+TimeoutStopSec=30
+
+[Install]
+WantedBy=multi-user.target
