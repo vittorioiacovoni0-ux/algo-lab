@@ -37,7 +37,9 @@ Le chiavi paper di Alpaca vanno impostate come Codespaces secrets (`ALPACA_API_K
 pip install -r requirements.txt
 pytest                 # test della logica della strategia
 python research_pairs.py
+python preflight.py    # controlli sul conto paper, nessun ordine
 python live_pairs.py
+python analyze_fills.py   # dopo qualche giorno: slippage reale dei fill
 ```
 
 ## Infrastruttura comune
