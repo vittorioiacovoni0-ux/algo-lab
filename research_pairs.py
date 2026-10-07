@@ -36,7 +36,8 @@ def session_flat(index, minutes):
     return must_be_flat(bar_close, session_close, minutes).values
 
 
-def backtest(pa, pb, beta, start, end):
+def pnl(pa, pb, beta, start, end):
+    """Serie per barra in [start, end): rendimento lordo e netto (su esposizione lorda 1) e stato."""
     spread = np.log(pa) - beta * np.log(pb)
     z = zscore(spread, WINDOW)              # rolling solo sul passato: usabile anche a cavallo degli split
     keep = (z.index >= start) & (z.index < end)
@@ -51,6 +52,10 @@ def backtest(pa, pb, beta, start, end):
     gross = (qa.shift(1) * pa.diff() + qb.shift(1) * pb.diff()).fillna(0)   # decido a fine barra t, PnL da t+1
     turnover = qa.diff().fillna(qa).abs() * pa + qb.diff().fillna(qb).abs() * pb
     net = gross - turnover * COST_BPS / 1e4
+    return pd.DataFrame({"gross": gross, "net": net, "pos": pos})
+
+
+def metrics(gross, net, pos):
     equity = net.cumsum()
     return {
         "sharpe": net.mean() / net.std() * np.sqrt(BARS_PER_YEAR) if net.std() > 0 else 0.0,
@@ -60,6 +65,11 @@ def backtest(pa, pb, beta, start, end):
         "trade": int(((pos != 0) & (pos.shift(1).fillna(0) == 0)).sum()),
         "in_mercato_%": 100 * (pos != 0).mean(),
     }
+
+
+def backtest(pa, pb, beta, start, end):
+    r = pnl(pa, pb, beta, start, end)
+    return metrics(r.gross, r.net, r.pos)
 
 
 def run(closes):
