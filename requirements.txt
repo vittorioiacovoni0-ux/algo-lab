@@ -4,3 +4,4 @@ numpy
 statsmodels
 python-dotenv
 pytest
+pyarrow
