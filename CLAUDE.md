@@ -8,7 +8,7 @@ Sono Vittorio, studente del master in Financial Technology & Analytics a Stevens
 - `research_pairs.py`: universo di 16 titoli USA, barre 15 min, 180 giorni. Test di cointegrazione Engle-Granger sul 60% train, hedge ratio OLS, valutazione solo out-of-sample sul 40% con costi (COST_BPS=3 per unità di turnover). Posizione decisa a fine barra t, PnL da t+1. Stampa il numero di coppie attese per caso (test multipli). Salva la migliore in `pair_config.json`.
 - `live_pairs.py`: loop event-driven a fine barra (+45 s di buffer), legge le posizioni reali dal conto, ribilancia solo ai cambi di stato, logga in `live_pairs.log`, gestisce gli orari di mercato via clock API.
 - `data.py`: barre Alpaca, feed IEX gratuito, solo orario regolare, scarta la barra in corso.
-- `config.py` legge le chiavi da `.env` (escluso via `.gitignore`).
+- `config.py` legge le chiavi dalle variabili d'ambiente (Codespaces secrets; `.env` opzionale in locale, escluso via `.gitignore`).
 - Testato solo su dati sintetici; prima esecuzione su dati reali ancora da fare.
 
 ## Vincoli non negoziabili

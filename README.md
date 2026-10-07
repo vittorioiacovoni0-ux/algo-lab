@@ -11,15 +11,17 @@ Strategia di mean reversion su coppie di azioni USA cointegrate, su barre da 15 
 - `live_pairs.py`: esecuzione event-driven su conto paper Alpaca, con logging e gestione degli orari di mercato
 
 ### Setup
+Le chiavi paper di Alpaca vanno impostate come Codespaces secrets (`ALPACA_API_KEY`, `ALPACA_API_SECRET`); in locale si può usare un file `.env` (escluso da git).
+
 ```bash
 pip install -r requirements.txt
-cp .env.example .env   # inserisci le chiavi paper di Alpaca
+pytest                 # test della logica della strategia
 python research_pairs.py
 python live_pairs.py
 ```
 
 ## Roadmap
-- [x] Fase 1: pairs trading, ricerca out-of-sample + paper trading
+- [ ] Fase 1 (in corso): pairs trading, ricerca out-of-sample + paper trading
 - [ ] Fase 2: registrazione order book crypto (L2) e analisi di microstruttura
 - [ ] Fase 3: market making Avellaneda-Stoikov con `hftbacktest` (coda e latenza)
 - [ ] Fase 4: pipeline completa su `nautilus_trader` + testnet
