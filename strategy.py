@@ -32,9 +32,17 @@ def next_state(state, z, z_in, z_out, z_stop):
     return state
 
 
-def positions(z, z_in, z_out, z_stop):
+def must_be_flat(bar_close, session_close, minutes):
+    """Strategia intraday: flat dalla barra che chiude a meno di una barra dalla fine della sessione.
+    Così il live chiude a mercato ancora aperto e nessuna posizione resta esposta al gap overnight."""
+    return bar_close >= session_close - pd.Timedelta(minutes=minutes)
+
+
+def positions(z, z_in, z_out, z_stop, flat=None):
+    """Stato a fine di ogni barra. `flat` (opzionale, booleana): barre in cui bisogna essere flat."""
+    flat = np.zeros(len(z), dtype=bool) if flat is None else np.asarray(flat, dtype=bool)
     out, s = [], 0
-    for v in z.values:
-        s = next_state(s, v, z_in, z_out, z_stop)
+    for v, f in zip(z.values, flat):
+        s = 0 if f else next_state(s, v, z_in, z_out, z_stop)
         out.append(s)
     return pd.Series(out, index=z.index, dtype=float)
