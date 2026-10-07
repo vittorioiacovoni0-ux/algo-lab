@@ -61,9 +61,22 @@ def get_bars(symbols, minutes=None, start="2016-01-01", end=None, adjustment=Adj
     if path.exists():
         return pd.read_parquet(path)
     tf = TimeFrame.Day if minutes is None else TimeFrame(minutes, TimeFrameUnit.Minute)
-    req = StockBarsRequest(symbol_or_symbols=symbols, timeframe=tf, start=pd.Timestamp(start, tz=TZ).to_pydatetime(),
-                           end=end.to_pydatetime(), adjustment=adjustment, feed=DataFeed.SIP)
-    df = _client.get_stock_bars(req).df.reset_index()
+    # a blocchi (simbolo x anno per l'intraday): alpaca-py crea un oggetto Python per barra, e 10 anni di barre
+    # da 5 minuti in una sola richiesta saturano la memoria
+    edges = [pd.Timestamp(start, tz=TZ)]
+    if minutes is not None:
+        edges += list(pd.date_range(edges[0], end, freq="YS", tz=TZ)[1:])
+    edges.append(end)
+    groups = [symbols] if minutes is None else [[s] for s in symbols]
+    chunks = []
+    for group in groups:
+        for a, b in zip(edges[:-1], edges[1:]):
+            req = StockBarsRequest(symbol_or_symbols=group, timeframe=tf, start=a.to_pydatetime(),
+                                   end=b.to_pydatetime(), adjustment=adjustment, feed=DataFeed.SIP)
+            bars = _client.get_stock_bars(req)
+            if bars.data:
+                chunks.append(bars.df.reset_index())
+    df = pd.concat(chunks, ignore_index=True).drop_duplicates(["symbol", "timestamp"])
     ts = df.timestamp.dt.tz_convert(TZ)
     if minutes is None:
         df["timestamp"] = ts.dt.tz_localize(None).dt.normalize()
