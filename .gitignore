@@ -1,5 +1,7 @@
-# segreti: MAI su GitHub
+# segreti: MAI su GitHub (anche file con nomi sbagliati per errore)
 .env
+.env.*
+.venv
 
 # output locali
 *.log
