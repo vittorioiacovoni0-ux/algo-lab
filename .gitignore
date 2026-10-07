@@ -1,0 +1,10 @@
+# segreti: MAI su GitHub
+.env
+
+# output locali
+*.log
+__pycache__/
+.venv/
+venv/
+*.parquet
+data/
