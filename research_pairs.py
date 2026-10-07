@@ -1,6 +1,7 @@
 """Fase 1 - Ricerca: cerca coppie cointegrate sul train, sceglie sulla validation, misura sul test."""
 import itertools
 import json
+import sys
 
 import numpy as np
 import pandas as pd
@@ -117,7 +118,13 @@ if __name__ == "__main__":
         print(pd.Series(test).round(2).to_string())
         cfg = {"a": best.a, "b": best.b, "beta": float(best.beta), "minutes": MINUTES,
                "window": WINDOW, "z_in": Z_IN, "z_out": Z_OUT, "z_stop": Z_STOP}
-        with open("pair_config.json", "w") as f:
-            json.dump(cfg, f, indent=2)
-        print(f"\nSalvata in pair_config.json: {best.a}/{best.b}. "
-              "Vai in paper solo se il risultato sul TEST ha senso.")
+        # il bot live legge pair_config.json: cambiarlo con posizioni aperte lascerebbe orfane le gambe vecchie
+        if "--save" in sys.argv:
+            with open("pair_config.json", "w") as f:
+                json.dump(cfg, f, indent=2)
+            print(f"\nSalvata in pair_config.json: {best.a}/{best.b}. "
+                  "Vai in paper solo se il risultato sul TEST ha senso.")
+        else:
+            print(f"\nConfigurazione proposta (NON salvata): {json.dumps(cfg)}\n"
+                  "Per sovrascrivere pair_config.json: python research_pairs.py --save "
+                  "(solo con il bot fermo e senza posizioni aperte).")
