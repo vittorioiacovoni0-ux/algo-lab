@@ -55,20 +55,31 @@ class NoiseBoundary(Strategy):
             self.lev = min(self.max_lev, self.target_vol / vol) if vol and vol > 0 else 0.0
             self.prev_close = self.closes[-1]
 
-    def on_bar(self, bars, side):
-        end = bars.minute[-1] + 1
-        if self.sigma is None or end < self.first or end > self.last or (end - OPEN_MIN) % self.every:
+    def is_decision_time(self, end):
+        """end = minuto di FINE dell'ultima barra (600 = 10:00)."""
+        return self.first <= end <= self.last and (end - OPEN_MIN) % self.every == 0
+
+    def levels(self, bars):
+        """Confini, VWAP e rumore all'ultima barra (None se non calcolabili). Usato da on_bar e dai log del live."""
+        if self.sigma is None or bars.minute[0] != OPEN_MIN:   # manca la barra di apertura: giorno anomalo
             return None
-        if bars.minute[0] != OPEN_MIN:              # manca la barra di apertura: giorno anomalo, non opero
-            return None
-        s = self.sigma[end]
+        s = self.sigma[bars.minute[-1] + 1]
         if np.isnan(s):
             return None
-        px, day_open = bars.close[-1], bars.open[0]
-        upper = max(day_open, self.prev_close) * (1 + self.band * s)
-        lower = min(day_open, self.prev_close) * (1 - self.band * s)
+        day_open = bars.open[0]
         typical = (bars.high + bars.low + bars.close) / 3
-        vwap = (typical * bars.volume).sum() / bars.volume.sum() if bars.volume.sum() > 0 else px
+        vol = bars.volume.sum()
+        return {"price": bars.close[-1], "sigma": s, "vwap": (typical * bars.volume).sum() / vol if vol > 0
+                else bars.close[-1], "upper": max(day_open, self.prev_close) * (1 + self.band * s),
+                "lower": min(day_open, self.prev_close) * (1 - self.band * s), "leverage": self.lev}
+
+    def on_bar(self, bars, side):
+        if not self.is_decision_time(bars.minute[-1] + 1):
+            return None
+        lv = self.levels(bars)
+        if lv is None:
+            return None
+        px, upper, lower, vwap = lv["price"], lv["upper"], lv["lower"], lv["vwap"]
         if side == 1:                               # stop mobile del long: max(confine superiore, VWAP)
             want = -1 if px < lower else (0 if px < max(upper, vwap) else 1)
         elif side == -1:                            # stop mobile dello short: min(confine inferiore, VWAP)

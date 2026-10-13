@@ -74,6 +74,16 @@ class Strategy:
         return None
 
 
+def target_shares(intent, shares, equity0, price, max_lev):
+    """Azioni obiettivo per un Intent: leva (limitata a max_lev) sull'equity di inizio giornata, al prezzo di
+    esecuzione. Stessa direzione della posizione attuale: nessun ridimensionamento (si tratta solo ai cambi di
+    lato). Usata sia dal backtest sia dal bot live."""
+    if intent.side == 0:
+        return 0
+    target = int(round(intent.side * min(intent.leverage, max_lev) * equity0 / price))
+    return shares if shares and np.sign(target) == np.sign(shares) else target
+
+
 def split_days(df):
     """DataFrame di barre da 1 minuto (indice = inizio barra, ora di New York) -> lista di Bars, uno per giorno."""
     idx = df.index
@@ -128,11 +138,8 @@ def run(df, strategy, equity=100_000.0, max_lev=4.0, max_daily_loss=0.03, costs=
             o, h, lo, c, m = day.open[i], day.high[i], day.low[i], day.close[i], day.minute[i]
             # 1) esecuzione all'apertura della decisione presa a fine barra precedente
             if pending is not None:
-                side, lev = pending.side, min(pending.leverage, max_lev)
-                target = int(round(side * lev * eq0 / o)) if side else 0
-                if np.sign(target) == np.sign(shares) and target != 0:
-                    target = shares                                          # stessa direzione: niente resize
-                fill(target, o, m, "segnale" if not halted else "limite perdita")
+                fill(target_shares(pending, shares, eq0, o, max_lev), o, m,
+                     "segnale" if not halted else "limite perdita")
                 stop, take = (pending.stop, pending.take) if shares else (None, None)
                 pending = None
             # 2) ordini fermi durante la barra
