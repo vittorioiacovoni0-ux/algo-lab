@@ -75,6 +75,24 @@ Gao, Han, Li, Zhou (2018): il rendimento dalla chiusura di ieri alle 10:00 predi
 
 Conclusione: l'effetto non sopravvive fuori campione sugli ETF; se esiste, è troppo piccolo per pagare anche i costi minimi.
 
+## Day trading (`daytrade/`)
+
+Motore a barre da 1 minuto (decisione a fine barra senza accesso al futuro, esecuzione all'apertura successiva, stop presso il broker con gestione dei gap, chiusura a fine giornata, leva max 4x, limite di perdita giornaliero, costi e commissioni regolamentari). SPY e QQQ, 2016-01 – 2026-10, ~1 milione di barre ciascuno. Costi: 0.5 bps per esecuzione (half-spread NBBO misurato: SPY 0.13 bps, QQQ 0.17 bps).
+
+| Sharpe netto | Tutto | Prima della pubblicazione | Dopo la pubblicazione |
+|---|---|---|---|
+| Noise boundary (Zarattini-Aziz-Barbon 2024) su SPY | 0.43 | 0.71 | −0.61 |
+| Noise boundary su QQQ | **1.14** (t 3.7) | 1.21 | **0.90** (t 1.4) |
+| Opening range breakout 5m (Zarattini-Aziz 2023) su QQQ | 0.52 | — | 0.14 |
+| QQQ buy & hold | 0.95 | | |
+
+Noise boundary su QQQ: CAGR 16.7%, max drawdown −22%, correlazione con QQQ −0.07, guadagna sia nei giorni di mercato in rialzo sia in ribasso, Sharpe positivo in 10 anni su 11, profitti sia sul lato long sia sullo short. Rischi: 41% del log-rendimento da 10 giorni (senza di loro CAGR 9.4%), leva media 2.1x nei giorni con posizione, dopo la pubblicazione solo ~2.4 anni (t 1.4: non ancora significativo).
+
+Conclusioni:
+1. Sulla strategia originale (SPY) l'effetto c'era prima della pubblicazione e non dopo: stesso schema delle Fasi 1 e 3.
+2. La stessa regola su QQQ (asset non usato nel paper, scelto a priori come verifica) regge anche dopo la pubblicazione: è l'unica candidata per il paper trading.
+3. I costi decidono: su SPY lo Sharpe netto passa da 0.85 a 0 tra 0 e 1 bp per esecuzione. Misurare lo spread reale (invece di assumerlo) ha cambiato la conclusione.
+
 ## Deploy su VM (Ubuntu)
 
 ```bash
@@ -86,6 +104,7 @@ Installa l'ambiente, esegue i test e registra il bot come servizio systemd (`alg
 - [ ] Fase 1 (in chiusura): pairs trading intraday. Ricerca conclusa (nessun edge netto); resta il paper trading come test di esecuzione e misura dello slippage
 - [x] Fase 2: strategie giornaliere su ETF multi-asset (trend following, momentum settoriale, vol targeting) contro i benchmark
 - [x] Fase 3: intraday momentum su ETF azionari, regressioni predittive e strategie con costi
-- [ ] Fase 4: portafoglio di strategie con risk management e deploy in paper su VM con monitoraggio
+- [ ] Day trading: motore e ricerca fatti; prossimo passo bot paper per la noise boundary su QQQ
+- [ ] Portafoglio di strategie con risk management e deploy in paper su VM con monitoraggio
 
 Il codice di microstruttura/HFT sviluppato e poi accantonato è in `archive/hft/` (non in uso).
