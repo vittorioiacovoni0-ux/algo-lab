@@ -93,6 +93,15 @@ Conclusioni:
 2. La stessa regola su QQQ (asset non usato nel paper, scelto a priori come verifica) regge anche dopo la pubblicazione: è l'unica candidata per il paper trading.
 3. I costi decidono: su SPY lo Sharpe netto passa da 0.85 a 0 tra 0 e 1 bp per esecuzione. Misurare lo spread reale (invece di assumerlo) ha cambiato la conclusione.
 
+### Bot paper (`daytrade/live.py`)
+
+```bash
+python -m daytrade.live --check     # stato del conto e cosa farebbe oggi, nessun ordine
+python -m daytrade.live --dry-run   # giornata completa, ordini solo nel log
+python -m daytrade.live             # paper trading (log in daytrade_live.log)
+```
+Stessa classe `NoiseBoundary` del backtest (un test verifica che il percorso live decida esattamente come il backtest). Storia dal feed SIP, barre di oggi dal feed IEX, decisioni ogni 30 minuti dalle 10:00 alle 15:30, inversioni in due ordini, stop di emergenza presso il broker al 3% dell'equity, uscita market-on-close 14 minuti prima della chiusura. Per fermarlo chiudendo tutto: creare un file `KILL` nella cartella.
+
 ## Deploy su VM (Ubuntu)
 
 ```bash
@@ -104,7 +113,7 @@ Installa l'ambiente, esegue i test e registra il bot come servizio systemd (`alg
 - [ ] Fase 1 (in chiusura): pairs trading intraday. Ricerca conclusa (nessun edge netto); resta il paper trading come test di esecuzione e misura dello slippage
 - [x] Fase 2: strategie giornaliere su ETF multi-asset (trend following, momentum settoriale, vol targeting) contro i benchmark
 - [x] Fase 3: intraday momentum su ETF azionari, regressioni predittive e strategie con costi
-- [ ] Day trading: motore e ricerca fatti; prossimo passo bot paper per la noise boundary su QQQ
+- [ ] Day trading: motore, ricerca e bot paper fatti; in corso il paper trading della noise boundary su QQQ
 - [ ] Portafoglio di strategie con risk management e deploy in paper su VM con monitoraggio
 
 Il codice di microstruttura/HFT sviluppato e poi accantonato è in `archive/hft/` (non in uso).

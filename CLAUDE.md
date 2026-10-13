@@ -23,6 +23,8 @@ Sono Vittorio, studente del master in Financial Technology & Analytics a Stevens
 - `daytrade/engine.py`: simulatore a barre da 1 minuto. Decisione a fine barra con viste tagliate (niente futuro), esecuzione all'apertura successiva, stop/target come ordini fermi (gap: eseguito all'apertura; stop e target nella stessa barra: prima lo stop), MOC a fine giornata, leva max 4x, limite di perdita giornaliero, costi (slippage bps, SEC fee, FINRA TAF).
 - `daytrade/strategies.py`: NoiseBoundary (Zarattini-Aziz-Barbon 2024, SPY) e OpeningRangeBreakout 5m (Zarattini-Aziz 2023, QQQ). Stesse classi per backtest e live. Regole riprese a memoria dai paper: da verificare sul testo.
 - `daytrade/research.py`: periodi prima/dopo la pubblicazione (conta il dopo), benchmark, robustezza.
+- `daytrade/live.py` (`python -m daytrade.live --check | --dry-run`): bot paper NoiseBoundary su QQQ. Storia SIP (come il backtest), barre di oggi IEX, decisioni 10:00-15:30 ogni 30 min (+15 s), inversioni in due ordini, cancella lo stop prima di ogni ordine, stop di emergenza al 3% dell'equity presso il broker, market-on-close a chiusura-14 min, file KILL = chiude tutto ed esce. Test: il percorso live decide esattamente come il backtest.
+- Risultati (README): noise boundary su QQQ Sharpe netto 1.14 (dopo pubblicazione 0.90, t 1.4); su SPY e ORB non regge dopo la pubblicazione. Costi 0.5 bps per esecuzione da half-spread misurato (SPY 0.13, QQQ 0.17 bps).
 - Vincolo reale: regola FINRA pattern day trader per conti sotto $25k (verificare lo stato della riforma).
 
 ## Archivio
@@ -37,10 +39,10 @@ Sono Vittorio, studente del master in Financial Technology & Analytics a Stevens
 - Sono negli USA: binance.com e Bybit bloccano gli IP statunitensi. Per i dati crypto usare Coinbase o Kraken (websocket pubblici) oppure i campioni di Tardis.dev.
 
 ## Roadmap
-1. [in chiusura] Fase 1: bot pairs in paper sul PC come test di esecuzione; a fine ottobre `analyze_fills.py` per lo slippage reale (serve anche a calibrare i costi del day trading).
+1. [chiusa 2026-10-13] Fase 1: il paper trading del bot pairs è stato interrotto per decisione di Vittorio (focus solo sul day trading). Il codice resta come storico.
 2. [fatta] Fase 2: strategie giornaliere su ETF (`daily/`).
 3. [fatta] Fase 3: intraday momentum (`intraday/`).
-4. [in corso] Day trading: (A) motore intraday 1m [fatto], (B) strategie di breakout [fatto], (C) valutazione prima/dopo pubblicazione, (D) bot live paper con stop presso il broker, limiti di rischio e kill switch, solo se C regge.
+4. [in corso] Day trading: (A) motore [fatto], (B) strategie [fatto], (C) valutazione [fatta: candidata noise boundary su QQQ], (D) bot live paper [fatto, da avviare sul PC]. Poi: confronto giornaliero live vs backtest (fill, slippage, decisioni), verifica delle regole sul paper originale.
 5. Poi: portafoglio di strategie (giornaliere + day trading) con risk management.
 
 ## Come voglio lavorare
