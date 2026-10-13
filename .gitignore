@@ -10,3 +10,6 @@ __pycache__/
 venv/
 *.parquet
 data/
+
+# kill switch del bot di day trading
+KILL
