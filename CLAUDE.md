@@ -1,7 +1,7 @@
 # algo-lab — contesto per Claude Code
 
 ## Chi sono e obiettivo
-Sono Vittorio, studente del master in Financial Technology & Analytics a Stevens (NJ), con background in asset management e derivati. Questo repo è un laboratorio personale per imparare il trading algoritmico intraday e giornaliero in modo rigoroso, dalla ricerca al paper trading. È anche un portfolio per candidature quant. Rispondimi in italiano; codice, nomi di variabili e commit in inglese o italiano va bene, ma coerenti con i file esistenti.
+Sono Vittorio, studente del master in Financial Technology & Analytics a Stevens (NJ), con background in asset management e derivati. Questo repo è un laboratorio personale per imparare il trading algoritmico in modo rigoroso, dalla ricerca al paper trading. Dal 2026-10-13 il focus è un progetto di DAY TRADING (sempre flat a fine giornata); Claude fa da senior quant trader e financial engineer. È anche un portfolio per candidature quant. Rispondimi in italiano; codice, nomi di variabili e commit in inglese o italiano va bene, ma coerenti con i file esistenti.
 
 ## Stato attuale — Fase 1: pairs trading intraday (Alpaca paper)
 - `strategy.py`: logica condivisa tra backtest e live (z-score dello spread su log-prezzi, macchina a stati 0/+1/-1 con z_in=2, z_out=0.5, z_stop=4, mai inversione diretta long→short). REGOLA: backtest e live devono usare lo stesso codice.
@@ -19,6 +19,12 @@ Sono Vittorio, studente del master in Financial Technology & Analytics a Stevens
 - `daily/` (`python -m daily.research`): TSMOM multi-asset, momentum settoriale, vol targeting su SPY vs SPY, 60/40, equipesati. Nessuna batte SPY in Sharpe; TSMOM è un diversificatore (corr 0.08, +16.7% nel 2022).
 - `intraday/` (`python -m intraday.research`): intraday momentum GHLZ 2018 su SPY/QQQ/IWM/DIA. Effetto non significativo fuori campione, netto negativo.
 
+## Day trading (`daytrade/`, avviato 2026-10-13)
+- `daytrade/engine.py`: simulatore a barre da 1 minuto. Decisione a fine barra con viste tagliate (niente futuro), esecuzione all'apertura successiva, stop/target come ordini fermi (gap: eseguito all'apertura; stop e target nella stessa barra: prima lo stop), MOC a fine giornata, leva max 4x, limite di perdita giornaliero, costi (slippage bps, SEC fee, FINRA TAF).
+- `daytrade/strategies.py`: NoiseBoundary (Zarattini-Aziz-Barbon 2024, SPY) e OpeningRangeBreakout 5m (Zarattini-Aziz 2023, QQQ). Stesse classi per backtest e live. Regole riprese a memoria dai paper: da verificare sul testo.
+- `daytrade/research.py`: periodi prima/dopo la pubblicazione (conta il dopo), benchmark, robustezza.
+- Vincolo reale: regola FINRA pattern day trader per conti sotto $25k (verificare lo stato della riforma).
+
 ## Archivio
 - `archive/hft/`: recorder L2 Coinbase + ricostruzione del book, accantonati (decisione 2026-10-07: il progetto resta su intraday e giornaliero, l'HFT eventualmente in progetti separati). Non usarlo né estenderlo salvo richiesta esplicita. Ha test e requirements propri, fuori dalla suite principale.
 - `deploy/`: systemd unit e `setup.sh` per far girare il bot paper su una VM Ubuntu (utente ubuntu).
@@ -31,10 +37,11 @@ Sono Vittorio, studente del master in Financial Technology & Analytics a Stevens
 - Sono negli USA: binance.com e Bybit bloccano gli IP statunitensi. Per i dati crypto usare Coinbase o Kraken (websocket pubblici) oppure i campioni di Tardis.dev.
 
 ## Roadmap
-1. [in chiusura] Fase 1: ricerca su dati reali e walk-forward fatti (nessun edge con ordini a mercato). Resta: far girare il bot in paper (PC o VM) alcune settimane come test di esecuzione e misurare l'implementation shortfall reale con `analyze_fills.py`, da confrontare con l'half-spread quotato (~2 bps).
+1. [in chiusura] Fase 1: bot pairs in paper sul PC come test di esecuzione; a fine ottobre `analyze_fills.py` per lo slippage reale (serve anche a calibrare i costi del day trading).
 2. [fatta] Fase 2: strategie giornaliere su ETF (`daily/`).
 3. [fatta] Fase 3: intraday momentum (`intraday/`).
-4. Fase 4: portafoglio di strategie, risk management (sizing, vol targeting, limiti), deploy paper su VM con monitoraggio.
+4. [in corso] Day trading: (A) motore intraday 1m [fatto], (B) strategie di breakout [fatto], (C) valutazione prima/dopo pubblicazione, (D) bot live paper con stop presso il broker, limiti di rischio e kill switch, solo se C regge.
+5. Poi: portafoglio di strategie (giornaliere + day trading) con risk management.
 
 ## Come voglio lavorare
 - Prima di modifiche non banali spiegami il piano in breve, poi procedi.
